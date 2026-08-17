@@ -112,6 +112,8 @@ export default function Home() {
           <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
           <span>•</span>
           <Link href="/privacy-policy" className="text-gray-400 hover:text-purple-400 transition-colors">Privacy Policy</Link>
+          <span>•</span>
+          <Link href="/delete-account" className="text-gray-400 hover:text-red-400 transition-colors">Delete Account</Link>
         </div>
         <p>© {new Date().getFullYear()} Uplan Web Portal. Syncing with mobile & database in real time.</p>
       </footer>
