@@ -4,13 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Lock, Mail, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Lock, Mail, User, Phone, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [success, setSuccess] = useState(false);
@@ -21,9 +23,22 @@ export default function RegisterPage() {
     setLoading(true);
     setErrorMsg('');
 
+    if (password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters long.');
+      setLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMsg('Passwords do not match. Please re-enter.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const cleanEmail = email.trim().toLowerCase();
       const cleanName = name.trim();
+      const cleanPhone = phone.trim();
 
       const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
@@ -31,6 +46,7 @@ export default function RegisterPage() {
         options: {
           data: {
             full_name: cleanName,
+            phone: cleanPhone,
           },
         },
       });
@@ -49,8 +65,24 @@ export default function RegisterPage() {
           id: data.user.id,
           email: cleanEmail,
           full_name: cleanName,
+          phone: cleanPhone,
           role: isAdmin ? 'super_admin' : 'user',
         });
+
+        // Send welcome email via Nodemailer API
+        try {
+          await fetch('/api/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'welcome',
+              to: cleanEmail,
+              name: cleanName,
+            }),
+          });
+        } catch (e) {
+          // Ignore welcome email error if transporter unconfigured
+        }
 
         setSuccess(true);
       }
@@ -70,7 +102,7 @@ export default function RegisterPage() {
           </div>
           <h2 className="text-2xl font-extrabold mb-3">Account Created Successfully!</h2>
           <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-            Your account for <span className="text-white font-bold">{email}</span> has been registered. You can now log in to Uplan.
+            Your account for <span className="text-white font-bold">{email}</span> has been registered. Welcome email has been sent!
           </p>
           <Link
             href="/login"
@@ -102,9 +134,9 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <form onSubmit={handleRegister} className="space-y-5">
+        <form onSubmit={handleRegister} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Full Name</label>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Full Name</label>
             <div className="relative">
               <User className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
               <input
@@ -119,7 +151,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Email Address</label>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Email Address</label>
             <div className="relative">
               <Mail className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
               <input
@@ -134,7 +166,22 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Password</label>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Phone Number</label>
+            <div className="relative">
+              <Phone className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
+              <input
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="enter your phone number"
+                className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
             <div className="relative">
               <Lock className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
               <input
@@ -152,6 +199,21 @@ export default function RegisterPage() {
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Confirm Password</label>
+            <div className="relative">
+              <Lock className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="re-enter your password"
+                className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl pl-11 pr-11 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+              />
             </div>
           </div>
 
