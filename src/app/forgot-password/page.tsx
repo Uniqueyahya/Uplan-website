@@ -22,24 +22,32 @@ export default function ForgotPasswordPage() {
     try {
       const resetUrl = `${window.location.origin}/reset-password`;
 
-      // Send customized Nodemailer HTML email via API route (from adventureconnect7@gmail.com)
-      const res = await fetch('/api/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'password-reset',
-          to: cleanEmail,
-          name: cleanEmail.split('@')[0],
-          url: resetUrl,
-        }),
+      // 1. Call Supabase Auth reset (uses the Custom SMTP configured in Supabase Dashboard: adventureconnect7@gmail.com)
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: resetUrl,
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to send reset email');
+      if (error) {
+        throw new Error(error.message);
       }
 
-      setSuccessMsg(`A password reset link has been sent from adventureconnect7@gmail.com to ${cleanEmail}. Please check your inbox or spam folder.`);
+      // 2. Also attempt custom Nodemailer send if API environment variables are present
+      try {
+        await fetch('/api/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'password-reset',
+            to: cleanEmail,
+            name: cleanEmail.split('@')[0],
+            url: resetUrl,
+          }),
+        });
+      } catch (e) {
+        // Fallback silently if Vercel env vars are not set — Supabase custom SMTP handled it!
+      }
+
+      setSuccessMsg(`A password reset link has been sent to ${cleanEmail}. Please check your inbox or spam folder.`);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to send reset link. Please try again.';
       setErrorMsg(errorMessage);
