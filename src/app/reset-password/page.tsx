@@ -4,24 +4,38 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Lock, AlertCircle, CheckCircle2, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { Lock, Mail, AlertCircle, CheckCircle2, Eye, EyeOff, KeyRound, ShieldCheck } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [otpToken, setOtpToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
-    // Verify that the user has a valid reset session
+    // 1. Check if user already has active session from token link
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        // User opened reset page without reset token/session
+      if (data.session) {
+        setHasSession(true);
       }
     });
+
+    // 2. Listen for recovery event
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || session) {
+        setHasSession(true);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -43,6 +57,20 @@ export default function ResetPasswordPage() {
     }
 
     try {
+      if (!hasSession && otpToken) {
+        // Mode A: Verify 6-digit OTP token first
+        const { error: otpError } = await supabase.auth.verifyOtp({
+          email: email.trim().toLowerCase(),
+          token: otpToken.trim(),
+          type: 'recovery',
+        });
+
+        if (otpError) {
+          throw new Error(otpError.message);
+        }
+      }
+
+      // Mode B: Update user password
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -56,7 +84,7 @@ export default function ResetPasswordPage() {
         router.replace('/login');
       }, 2500);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to reset password. Please try requesting a new link.';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to reset password. Please verify your details.';
       setErrorMsg(errorMessage);
     } finally {
       setLoading(false);
@@ -71,7 +99,11 @@ export default function ResetPasswordPage() {
             <KeyRound className="w-7 h-7" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-2">Set New Password</h1>
-          <p className="text-gray-400 text-sm">Create a new password for your Uplan account</p>
+          <p className="text-gray-400 text-sm">
+            {hasSession 
+              ? 'Enter your new password below' 
+              : 'Enter your email, verification token code, and new password'}
+          </p>
         </div>
 
         {errorMsg && (
@@ -89,9 +121,42 @@ export default function ResetPasswordPage() {
         )}
 
         {!successMsg && (
-          <form onSubmit={handleUpdatePassword} className="space-y-5">
+          <form onSubmit={handleUpdatePassword} className="space-y-4">
+            {!hasSession && (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Email Address</label>
+                  <div className="relative">
+                    <Mail className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your email address"
+                      className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">OTP / Token Code (Optional)</label>
+                  <div className="relative">
+                    <ShieldCheck className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
+                    <input
+                      type="text"
+                      value={otpToken}
+                      onChange={(e) => setOtpToken(e.target.value)}
+                      placeholder="6-digit code from email"
+                      className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">New Password</label>
+              <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">New Password</label>
               <div className="relative">
                 <Lock className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
                 <input
@@ -113,7 +178,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Confirm New Password</label>
+              <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Confirm New Password</label>
               <div className="relative">
                 <Lock className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
                 <input
