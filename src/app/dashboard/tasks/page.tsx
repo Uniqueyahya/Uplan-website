@@ -1,64 +1,62 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import WebNavbar from '@/components/WebNavbar';
+import { useThemeContext } from '@/context/ThemeContext';
 import { scheduleWebTimerNotifications, cancelWebTimerNotifications } from '@/lib/notifications';
 import { 
   CheckCircle2, 
   Circle, 
   Plus, 
   Trash2, 
-  ShoppingCart, 
-  LogOut, 
   CheckSquare, 
   Play, 
   Pause, 
-  RotateCcw,
-  Clock,
-  Sparkles,
-  Flame,
-  Check,
-  History,
-  Calendar as CalendarIcon,
-  X,
-  Eye,
-  Target
+  Clock, 
+  Flame, 
+  Check, 
+  History, 
+  Calendar as CalendarIcon, 
+  X, 
+  Eye, 
+  Target 
 } from 'lucide-react';
 
 export default function TasksPage() {
   const router = useRouter();
+  const { theme } = useThemeContext();
+  const isLight = theme === 'light';
+
   const [user, setUser] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [activeSubTab, setActiveSubTab] = useState<'today' | 'weekly' | 'history'>('today');
   const [loading, setLoading] = useState(true);
 
-  // New Task Form State
+  // Form & Modals
   const [taskTitle, setTaskTitle] = useState('');
   const [taskMode, setTaskMode] = useState<'todo' | 'timer'>('todo');
   const [targetDuration, setTargetDuration] = useState<number>(30);
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
 
-  // Task Detail & Dedicated Timer Modal State
   const [selectedTask, setSelectedTask] = useState<any>(null);
 
-  // Live Bleeding Timer State
+  // Live Timer
   const [activeTimerTask, setActiveTimerTask] = useState<any>(null);
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const [scheduledWebTimers, setScheduledWebTimers] = useState<any>(null);
 
-  // Weekly Target Planner State
+  // Weekly Targets
   const [weeklyTargets, setWeeklyTargets] = useState<any[]>([]);
   const [newWeeklyTitle, setNewWeeklyTitle] = useState('');
   const [newWeeklyAmount, setNewWeeklyAmount] = useState('5');
   const [newWeeklyUnit, setNewWeeklyUnit] = useState('times');
   const [showNewWeeklyModal, setShowNewWeeklyModal] = useState(false);
 
-  // History Tab State
+  // History Tab
   const [historyDate, setHistoryDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [historyTasks, setHistoryTasks] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -99,9 +97,7 @@ export default function TasksPage() {
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (data) {
-        setWeeklyTargets(data);
-      }
+      if (data) setWeeklyTargets(data);
     } catch (e) {
       setWeeklyTargets([]);
     }
@@ -166,7 +162,6 @@ export default function TasksPage() {
     }
   }, [historyDate, activeSubTab, user]);
 
-  // Live Bleeding Countdown Effect
   useEffect(() => {
     let interval: any = null;
     if (isTimerRunning && secondsLeft > 0) {
@@ -192,11 +187,7 @@ export default function TasksPage() {
     try {
       const { data: userData } = await supabase.auth.getUser();
       const activeUser = userData?.user || user;
-      if (!activeUser?.id) {
-        alert('Session expired. Please sign in again.');
-        router.replace('/login');
-        return;
-      }
+      if (!activeUser?.id) return;
 
       const isTimer = taskMode === 'timer';
 
@@ -210,16 +201,14 @@ export default function TasksPage() {
         status: 'active',
       }]);
 
-      if (error) {
-        alert('Failed to save task: ' + error.message);
-      } else {
+      if (!error) {
         setTaskTitle('');
         setTaskMode('todo');
         setShowNewTaskModal(false);
         await fetchTasks(activeUser.id, selectedDate);
       }
     } catch (e: any) {
-      alert('Error creating task: ' + (e.message || 'Unknown error'));
+      console.error(e);
     }
   };
 
@@ -310,7 +299,7 @@ export default function TasksPage() {
           .eq('completion_date', selectedDate);
       }
     } catch (e) {
-      // Optimistic update handles UI
+      // Optimistic state
     }
   };
 
@@ -347,28 +336,26 @@ export default function TasksPage() {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const completedCount = tasks.filter(t => t.isCompleted).length;
-  const totalCount = tasks.length;
-  const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#080808] text-white flex items-center justify-center font-sans">
-        <div className="text-gray-400 font-semibold animate-pulse">Loading Tasks & Planner...</div>
+      <div className={`min-h-screen flex items-center justify-center font-sans ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#080808] text-white'}`}>
+        <div className="font-semibold animate-pulse opacity-70">Loading Tasks & Planner...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white font-sans flex flex-col">
+    <div className={`min-h-screen font-sans flex flex-col transition-colors duration-300 ${
+      isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#080808] text-white'
+    }`}>
       <WebNavbar />
 
-      <div className="border-b border-white/10 bg-[#121212]">
+      <div className={`border-b ${isLight ? 'bg-white border-slate-200' : 'bg-[#121212] border-white/10'}`}>
         <div className="max-w-7xl mx-auto px-6 h-12 flex items-center gap-2">
           <button
             onClick={() => setActiveSubTab('today')}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeSubTab === 'today' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+              activeSubTab === 'today' ? 'bg-purple-600 text-white' : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-gray-400 hover:text-white'
             }`}
           >
             Today's Planner
@@ -376,7 +363,7 @@ export default function TasksPage() {
           <button
             onClick={() => setActiveSubTab('weekly')}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeSubTab === 'weekly' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+              activeSubTab === 'weekly' ? 'bg-purple-600 text-white' : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-gray-400 hover:text-white'
             }`}
           >
             Weekly Targets 🗓️
@@ -384,7 +371,7 @@ export default function TasksPage() {
           <button
             onClick={() => setActiveSubTab('history')}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeSubTab === 'history' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+              activeSubTab === 'history' ? 'bg-purple-600 text-white' : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-gray-400 hover:text-white'
             }`}
           >
             Track History 📜
@@ -394,32 +381,36 @@ export default function TasksPage() {
 
       {activeSubTab === 'today' && (
         <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-6">
-          <div className="p-6 rounded-2xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-indigo-500/15 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
+            isLight 
+              ? 'bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 border-slate-200 shadow-sm' 
+              : 'bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-indigo-500/15 border-white/10'
+          }`}>
             <div>
               <h1 className="text-2xl font-bold mb-1">Morning Day Planner 🌅</h1>
-              <p className="text-gray-400 text-sm">Simple To-Dos without timing OR Timed Focus tasks with background alarms</p>
+              <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Simple To-Dos without timing OR Timed Focus tasks with background alarms</p>
             </div>
 
             <button
               onClick={() => setShowNewTaskModal(true)}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm shadow-lg hover:opacity-95 transition-all flex items-center gap-2 shrink-0"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm text-white shadow-md hover:opacity-95 transition-all flex items-center gap-2 shrink-0"
             >
               <Plus className="w-4 h-4" /> Add Goal or Task
             </button>
           </div>
 
           {activeTimerTask && (
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-900/40 via-indigo-900/40 to-pink-900/40 border border-purple-500/50 shadow-xl space-y-4">
+            <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-900/40 via-indigo-900/40 to-pink-900/40 border border-purple-500/50 shadow-xl space-y-4 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Flame className="w-5 h-5 text-pink-400 animate-pulse" />
                   <span className="text-xs font-bold uppercase tracking-wider text-purple-300">Active Bleeding Focus Timer</span>
                 </div>
-                <span className="text-xs text-gray-400 font-bold">{activeTimerTask.name}</span>
+                <span className="text-xs text-gray-300 font-bold">{activeTimerTask.name}</span>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="text-5xl font-black font-mono tracking-tight text-white">
+                <div className="text-5xl font-black font-mono tracking-tight">
                   {formatTime(secondsLeft)}
                 </div>
 
@@ -445,7 +436,7 @@ export default function TasksPage() {
 
           <div className="space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2">
-              <CheckSquare className="w-5 h-5 text-purple-400" /> Planned Goals & Tasks ({tasks.length})
+              <CheckSquare className="w-5 h-5 text-purple-500" /> Planned Goals & Tasks ({tasks.length})
             </h2>
 
             {tasks.length > 0 ? (
@@ -454,34 +445,40 @@ export default function TasksPage() {
                   key={task.id}
                   className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${
                     task.isCompleted
-                      ? 'bg-[#121212] border-white/5 opacity-60'
-                      : 'bg-[#141414] border-white/10 hover:border-purple-500/30'
+                      ? isLight ? 'bg-slate-100 border-slate-200 opacity-60' : 'bg-[#121212] border-white/5 opacity-60'
+                      : isLight ? 'bg-white border-slate-200 hover:border-purple-300 shadow-sm' : 'bg-[#141414] border-white/10 hover:border-purple-500/30'
                   }`}
                 >
                   <div className="flex items-center gap-3.5 flex-1 cursor-pointer" onClick={() => setSelectedTask(task)}>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleToggleTask(task); }}
-                      className="text-purple-400 hover:scale-110 transition-transform"
+                      className="text-purple-500 hover:scale-110 transition-transform"
                     >
                       {task.isCompleted ? (
-                        <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                        <CheckCircle2 className="w-6 h-6 text-emerald-500" />
                       ) : (
-                        <Circle className="w-6 h-6 text-gray-500" />
+                        <Circle className="w-6 h-6 text-gray-400" />
                       )}
                     </button>
 
                     <div>
-                      <span className={`font-semibold text-base block ${task.isCompleted ? 'line-through text-gray-400' : 'text-white'}`}>
+                      <span className={`font-semibold text-base block ${
+                        task.isCompleted 
+                          ? 'line-through text-gray-400' 
+                          : isLight ? 'text-slate-900' : 'text-white'
+                      }`}>
                         {task.name}
                       </span>
                       
                       <div className="flex items-center gap-2 mt-0.5">
                         {task.timerEnabled ? (
-                          <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[11px] font-semibold flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[11px] font-semibold flex items-center gap-1">
                             <Clock className="w-3 h-3" /> Timed Focus ({task.targetValue} min)
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-white/5 text-gray-400 text-[11px] font-semibold">
+                          <span className={`px-2 py-0.5 rounded-md text-[11px] font-semibold ${
+                            isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/5 text-gray-400'
+                          }`}>
                             🌅 Simple Untimed Goal
                           </span>
                         )}
@@ -492,7 +489,9 @@ export default function TasksPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedTask(task)}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold flex items-center gap-1"
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 ${
+                        isLight ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200' : 'bg-white/5 border-white/10 text-gray-300'
+                      }`}
                     >
                       <Eye className="w-3.5 h-3.5" /> Details & Timer
                     </button>
@@ -500,15 +499,15 @@ export default function TasksPage() {
                     {task.timerEnabled && !task.isCompleted && (
                       <button
                         onClick={() => startBleedingTimer(task)}
-                        className="px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 text-xs font-bold border border-purple-500/30 flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-600 dark:text-purple-300 text-xs font-bold border border-purple-500/30 flex items-center gap-1.5"
                       >
-                        <Play className="w-3.5 h-3.5 fill-purple-300" /> Start Timer
+                        <Play className="w-3.5 h-3.5 fill-purple-600 dark:fill-purple-300" /> Start Timer
                       </button>
                     )}
 
                     <button
                       onClick={() => handleDeleteTask(task.id)}
-                      className="p-2 text-gray-500 hover:text-red-400 transition-colors"
+                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -516,8 +515,10 @@ export default function TasksPage() {
                 </div>
               ))
             ) : (
-              <div className="p-12 text-center rounded-2xl bg-[#141414] border border-white/10 text-gray-500">
-                No tasks planned for today yet. Click <span className="text-purple-400 font-bold">Add Goal or Task</span> above!
+              <div className={`p-12 text-center rounded-2xl border ${
+                isLight ? 'bg-white border-slate-200 text-slate-500' : 'bg-[#141414] border-white/10 text-gray-500'
+              }`}>
+                No tasks planned for today yet. Click <span className="text-purple-600 font-bold">Add Goal or Task</span> above!
               </div>
             )}
           </div>
@@ -526,17 +527,19 @@ export default function TasksPage() {
 
       {activeSubTab === 'weekly' && (
         <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 space-y-6">
-          <div className="p-6 rounded-2xl bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-indigo-500/15 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
+            isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-indigo-500/15 border-white/10'
+          }`}>
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
-                <Target className="w-6 h-6 text-pink-400" /> Full Weekly Target Planner 🗓️
+                <Target className="w-6 h-6 text-pink-500" /> Full Weekly Target Planner 🗓️
               </h1>
-              <p className="text-gray-400 text-sm">Design your target goals for the week and mark achieved progress step-by-step</p>
+              <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Design your target goals for the week and mark achieved progress step-by-step</p>
             </div>
 
             <button
               onClick={() => setShowNewWeeklyModal(true)}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm shadow-lg hover:opacity-95 transition-all flex items-center gap-2 shrink-0"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm text-white shadow-md hover:opacity-95 transition-all flex items-center gap-2 shrink-0"
             >
               <Plus className="w-4 h-4" /> Design Weekly Target
             </button>
@@ -547,31 +550,33 @@ export default function TasksPage() {
               weeklyTargets.map((target) => {
                 const pct = Math.min(100, Math.round((target.current_amount / target.target_amount) * 100));
                 return (
-                  <div key={target.id} className="p-6 rounded-2xl bg-[#141414] border border-white/10 space-y-4">
+                  <div key={target.id} className={`p-6 rounded-2xl border space-y-4 ${
+                    isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
+                  }`}>
                     <div className="flex items-start justify-between">
                       <div>
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                          target.is_achieved ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-500/20 text-purple-300'
+                          target.is_achieved ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-purple-500/20 text-purple-600 dark:text-purple-300'
                         }`}>
                           {target.is_achieved ? '🎉 TARGET ACHIEVED' : 'IN PROGRESS'}
                         </span>
-                        <h3 className="text-lg font-bold text-white mt-2">{target.title}</h3>
+                        <h3 className={`text-lg font-bold mt-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{target.title}</h3>
                       </div>
 
                       <button
                         onClick={() => handleDeleteWeeklyTarget(target.id)}
-                        className="text-gray-500 hover:text-red-400 transition-colors"
+                        className="text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
                     <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs text-gray-400 font-semibold">
+                      <div className={`flex items-center justify-between text-xs font-semibold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
                         <span>Achieved: {target.current_amount} / {target.target_amount} {target.unit}</span>
-                        <span className="text-purple-400 font-bold">{pct}%</span>
+                        <span className="text-purple-600 font-bold">{pct}%</span>
                       </div>
-                      <div className="h-2.5 w-full bg-[#1c1c1c] rounded-full overflow-hidden border border-white/5">
+                      <div className={`h-2.5 w-full rounded-full overflow-hidden border ${isLight ? 'bg-slate-200 border-slate-300' : 'bg-[#1c1c1c] border-white/5'}`}>
                         <div
                           className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-300"
                           style={{ width: `${pct}%` }}
@@ -581,7 +586,7 @@ export default function TasksPage() {
 
                     <button
                       onClick={() => handleIncrementWeeklyTarget(target)}
-                      className="w-full py-2.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/30 font-bold text-xs transition-all flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-600 dark:text-purple-200 border border-purple-500/30 font-bold text-xs transition-all flex items-center justify-center gap-1.5"
                     >
                       <Plus className="w-4 h-4" /> Mark +1 Achieved Progress
                     </button>
@@ -589,8 +594,10 @@ export default function TasksPage() {
                 );
               })
             ) : (
-              <div className="md:col-span-2 p-12 text-center rounded-2xl bg-[#141414] border border-white/10 text-gray-500">
-                No weekly targets designed yet. Click <span className="text-purple-400 font-bold">Design Weekly Target</span> above!
+              <div className={`md:col-span-2 p-12 text-center rounded-2xl border ${
+                isLight ? 'bg-white border-slate-200 text-slate-500' : 'bg-[#141414] border-white/10 text-gray-500'
+              }`}>
+                No weekly targets designed yet. Click <span className="text-purple-600 font-bold">Design Weekly Target</span> above!
               </div>
             )}
           </div>
@@ -599,26 +606,32 @@ export default function TasksPage() {
 
       {activeSubTab === 'history' && (
         <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 space-y-6">
-          <div className="p-6 rounded-2xl bg-[#141414] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+            isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
+          }`}>
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
-                <History className="w-6 h-6 text-purple-400" /> Completion History & Tracking Logs 📜
+                <History className="w-6 h-6 text-purple-500" /> Completion History & Tracking Logs 📜
               </h1>
-              <p className="text-gray-400 text-sm">Review your past completed goals and logged focus time</p>
+              <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Review your past completed goals and logged focus time</p>
             </div>
 
-            <div className="flex items-center gap-2 bg-[#1c1c1c] px-4 py-2 rounded-xl border border-white/10">
-              <CalendarIcon className="w-4 h-4 text-purple-400" />
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
+              isLight ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-[#1c1c1c] border-white/10 text-white'
+            }`}>
+              <CalendarIcon className="w-4 h-4 text-purple-500" />
               <input
                 type="date"
                 value={historyDate}
                 onChange={(e) => setHistoryDate(e.target.value)}
-                className="bg-transparent text-sm text-white font-bold focus:outline-none"
+                className="bg-transparent text-sm font-bold focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="p-6 rounded-2xl bg-[#141414] border border-white/10 space-y-4">
+          <div className={`p-6 rounded-2xl border space-y-4 ${
+            isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
+          }`}>
             <h2 className="text-lg font-bold">
               Completed Tasks on {new Date(historyDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </h2>
@@ -628,25 +641,27 @@ export default function TasksPage() {
             ) : historyTasks.length > 0 ? (
               <div className="space-y-3">
                 {historyTasks.map((item) => (
-                  <div key={item.id} className="p-4 rounded-xl bg-[#1c1c1c] border border-white/5 flex items-center justify-between">
+                  <div key={item.id} className={`p-4 rounded-xl border flex items-center justify-between ${
+                    isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#1c1c1c] border-white/5'
+                  }`}>
                     <div className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                       <div>
-                        <span className="font-semibold text-white block">{item.taskName}</span>
-                        <span className="text-xs text-gray-400">
+                        <span className={`font-semibold block ${isLight ? 'text-slate-900' : 'text-white'}`}>{item.taskName}</span>
+                        <span className="text-xs opacity-60">
                           {item.timerEnabled ? `⏱️ Timed Focus (${item.targetValue} min)` : '🌅 Simple Untimed Goal'}
                         </span>
                       </div>
                     </div>
 
-                    <span className="text-xs text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
                       Completed at {item.completedAt}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="py-12 text-center text-gray-500">
+              <div className={`py-12 text-center ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>
                 No task completions recorded on {historyDate}.
               </div>
             )}
@@ -654,189 +669,46 @@ export default function TasksPage() {
         </main>
       )}
 
-      {/* NEW WEEKLY TARGET MODAL */}
-      {showNewWeeklyModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-6">
-          <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold">Design Weekly Target 🗓️</h3>
-              <button onClick={() => setShowNewWeeklyModal(false)} className="text-gray-400 hover:text-white">✕</button>
-            </div>
-
-            <form onSubmit={handleCreateWeeklyTarget} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase">Target Title</label>
-                <input
-                  type="text"
-                  required
-                  value={newWeeklyTitle}
-                  onChange={(e) => setNewWeeklyTitle(e.target.value)}
-                  placeholder="e.g. Run 30 km / Read 100 pages / Complete 5 projects"
-                  className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase">Target Amount</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={newWeeklyAmount}
-                    onChange={(e) => setNewWeeklyAmount(e.target.value)}
-                    className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase">Unit</label>
-                  <input
-                    type="text"
-                    value={newWeeklyUnit}
-                    onChange={(e) => setNewWeeklyUnit(e.target.value)}
-                    placeholder="e.g. km / pages / times"
-                    className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowNewWeeklyModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold text-gray-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-sm font-bold text-white shadow-md hover:opacity-95"
-                >
-                  Save Weekly Target
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* DEDICATED TASK DETAIL & TIMER MODAL */}
-      {selectedTask && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-6">
-          <div className="w-full max-w-lg bg-[#141414] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-6 relative">
-            <button
-              onClick={() => setSelectedTask(null)}
-              className="absolute right-5 top-5 p-2 text-gray-400 hover:text-white rounded-full bg-white/5"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div>
-              <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider inline-block mb-3">
-                {selectedTask.timerEnabled ? '⏱️ Timed Focus Task' : '🌅 Simple Untimed Goal'}
-              </span>
-              <h2 className="text-2xl font-extrabold text-white mb-1">{selectedTask.name}</h2>
-              <p className="text-gray-400 text-sm">
-                Target: {selectedTask.timerEnabled ? `${selectedTask.targetValue} Minutes` : '1 Goal Tick'}
-              </p>
-            </div>
-
-            {selectedTask.timerEnabled ? (
-              <div className="p-6 rounded-2xl bg-gradient-to-tr from-purple-950/60 to-indigo-950/60 border border-purple-500/30 text-center space-y-4">
-                <div className="text-5xl font-black font-mono tracking-tight text-white">
-                  {activeTimerTask?.id === selectedTask.id ? formatTime(secondsLeft) : `${selectedTask.targetValue}:00`}
-                </div>
-                <p className="text-xs text-purple-300">
-                  {activeTimerTask?.id === selectedTask.id ? (isTimerRunning ? '🔥 Timer Bleeding Down Live...' : '⏸️ Timer Paused') : 'Ready to start focus session'}
-                </p>
-
-                <div className="flex items-center justify-center gap-3 pt-2">
-                  {activeTimerTask?.id === selectedTask.id ? (
-                    <>
-                      <button
-                        onClick={() => setIsTimerRunning(!isTimerRunning)}
-                        className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow-md flex items-center gap-2"
-                      >
-                        {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                        {isTimerRunning ? 'Pause' : 'Resume'}
-                      </button>
-                      <button
-                        onClick={() => handleToggleTask(selectedTask)}
-                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md flex items-center gap-2"
-                      >
-                        <Check className="w-4 h-4" /> Complete Task
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => startBleedingTimer(selectedTask)}
-                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-bold text-sm shadow-lg hover:opacity-95 flex items-center gap-2"
-                    >
-                      <Play className="w-4 h-4 fill-white" /> Start Bleeding Timer
-                    </button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="p-6 rounded-2xl bg-[#1c1c1c] border border-white/5 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
-                  {selectedTask.isCompleted ? <CheckCircle2 className="w-8 h-8" /> : <Circle className="w-8 h-8" />}
-                </div>
-                <h3 className="font-bold text-lg">
-                  {selectedTask.isCompleted ? 'Goal Completed 🎉' : 'Goal Pending'}
-                </h3>
-                <button
-                  onClick={() => handleToggleTask(selectedTask)}
-                  className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                    selectedTask.isCompleted
-                      ? 'bg-white/10 text-gray-300 hover:bg-white/20'
-                      : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-md'
-                  }`}
-                >
-                  {selectedTask.isCompleted ? 'Mark Pending' : 'Mark as Completed ✓'}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* NEW TASK CREATION MODAL */}
+      {/* NEW TASK MODAL */}
       {showNewTaskModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-6">
+          <div className={`w-full max-w-md border rounded-3xl p-6 shadow-2xl space-y-5 ${
+            isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#141414] border-white/10 text-white'
+          }`}>
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold">Plan New Goal / Task</h3>
-              <button onClick={() => setShowNewTaskModal(false)} className="text-gray-400 hover:text-white">✕</button>
+              <button onClick={() => setShowNewTaskModal(false)} className="opacity-60 hover:opacity-100">✕</button>
             </div>
 
             <form onSubmit={handleCreateTask} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase">Goal Title</label>
+                <label className="block text-xs font-semibold opacity-70 mb-1.5 uppercase">Goal Title</label>
                 <input
                   type="text"
                   required
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
-                  placeholder="e.g. Buy groceries / Read 10 pages / Morning Run"
-                  className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                  placeholder="e.g. Buy groceries / Read 10 pages"
+                  className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500 ${
+                    isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-[#1c1c1c] border-white/10 text-white'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase">Select Goal Type</label>
+                <label className="block text-xs font-semibold opacity-70 mb-2 uppercase">Select Goal Type</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setTaskMode('todo')}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       taskMode === 'todo'
-                        ? 'bg-purple-600/20 border-purple-500 text-white'
-                        : 'bg-[#1c1c1c] border-white/10 text-gray-400 hover:text-white'
+                        ? 'bg-purple-600/20 border-purple-500 text-purple-600 dark:text-white font-bold'
+                        : isLight ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-[#1c1c1c] border-white/10 text-gray-400'
                     }`}
                   >
                     <span className="font-bold text-sm block mb-0.5">🌅 Simple Untimed</span>
-                    <span className="text-[11px] text-gray-400 block">No timer. Just tick off when done.</span>
+                    <span className="text-[11px] opacity-75 block">No timer. Tick off when done.</span>
                   </button>
 
                   <button
@@ -844,26 +716,28 @@ export default function TasksPage() {
                     onClick={() => setTaskMode('timer')}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       taskMode === 'timer'
-                        ? 'bg-purple-600/20 border-purple-500 text-white'
-                        : 'bg-[#1c1c1c] border-white/10 text-gray-400 hover:text-white'
+                        ? 'bg-purple-600/20 border-purple-500 text-purple-600 dark:text-white font-bold'
+                        : isLight ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-[#1c1c1c] border-white/10 text-gray-400'
                     }`}
                   >
                     <span className="font-bold text-sm block mb-0.5">⏱️ Timed Focus</span>
-                    <span className="text-[11px] text-gray-400 block">Bleeding timer countdown.</span>
+                    <span className="text-[11px] opacity-75 block">Bleeding timer countdown.</span>
                   </button>
                 </div>
               </div>
 
               {taskMode === 'timer' && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase">Focus Duration (Minutes)</label>
+                  <label className="block text-xs font-semibold opacity-70 mb-1.5 uppercase">Focus Duration (Minutes)</label>
                   <input
                     type="number"
                     min={1}
                     max={300}
                     value={targetDuration}
                     onChange={(e) => setTargetDuration(Number(e.target.value) || 30)}
-                    className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                    className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500 ${
+                      isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-[#1c1c1c] border-white/10 text-white'
+                    }`}
                   />
                 </div>
               )}
@@ -872,7 +746,9 @@ export default function TasksPage() {
                 <button
                   type="button"
                   onClick={() => setShowNewTaskModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold text-gray-300"
+                  className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold ${
+                    isLight ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-white/5 border-white/10 text-gray-300'
+                  }`}
                 >
                   Cancel
                 </button>

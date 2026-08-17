@@ -55,16 +55,16 @@ export default function Home() {
           Uplan combines daily goal planning, digital Market Shopping Lists (Sugar, Soap, Groceries), and executive administrative management into one unified platform.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center max-w-md">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
           <Link 
             href="/register" 
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-lg shadow-xl shadow-purple-500/30 hover:opacity-95 transition-all"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm shadow-md shadow-purple-500/20 hover:opacity-95 transition-all text-center"
           >
             Create Your Account
           </Link>
           <Link 
             href="/login" 
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 font-semibold text-lg transition-all"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 font-bold text-sm transition-all text-center"
           >
             Sign In to Dashboard
           </Link>

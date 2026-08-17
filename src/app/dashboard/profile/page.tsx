@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import WebNavbar from '@/components/WebNavbar';
+import { useThemeContext } from '@/context/ThemeContext';
 import { 
   User, 
   Sun, 
@@ -13,25 +13,28 @@ import {
   Bell, 
   Shield, 
   LogOut, 
-  Camera, 
   Check, 
-  Lock,
   Sparkles,
-  Smartphone
+  Camera,
+  Upload
 } from 'lucide-react';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { theme, setTheme } = useThemeContext();
+  const isLight = theme === 'light';
+
   const [user, setUser] = useState<any>(null);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark');
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [taskReminders, setTaskReminders] = useState(true);
   const [streakReminders, setStreakReminders] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -63,24 +66,98 @@ export default function ProfilePage() {
     fetchProfile();
   }, [router]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    setAvatarUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) {
+        // Fallback: convert to base64 data URL if storage bucket doesn't exist
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const dataUrl = reader.result as string;
+          setAvatarUrl(dataUrl);
+
+          await supabase.from('profiles').upsert({
+            id: user.id,
+            email: user.email,
+            avatar_url: dataUrl,
+          });
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const { data: urlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        const publicUrl = urlData.publicUrl;
+        setAvatarUrl(publicUrl);
+
+        await supabase.from('profiles').upsert({
+          id: user.id,
+          email: user.email,
+          avatar_url: publicUrl,
+        });
+      }
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const handleSaveAccountSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id) return;
     setSaving(true);
     setSaveSuccess(false);
+    setSaveError('');
 
     try {
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        email,
-        full_name: fullName.trim(),
-        avatar_url: avatarUrl.trim(),
+      const cleanName = fullName.trim();
+      const cleanAvatar = avatarUrl.trim();
+
+      // 1. Update Supabase Auth User metadata
+      const { error: authErr } = await supabase.auth.updateUser({
+        data: { full_name: cleanName, avatar_url: cleanAvatar }
       });
 
+      if (authErr) {
+        console.warn('Auth metadata update warning:', authErr.message);
+      }
+
+      // 2. Upsert into public.profiles table
+      const { error: profileErr } = await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: cleanName,
+        avatar_url: cleanAvatar,
+        updated_at: new Date().toISOString(),
+      });
+
+      if (profileErr) {
+        setSaveError('Failed to save profile: ' + profileErr.message);
+        return;
+      }
+
+      setUser((prev: any) => ({
+        ...prev,
+        user_metadata: { ...prev?.user_metadata, full_name: cleanName, avatar_url: cleanAvatar }
+      }));
+
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (e) {
-      alert('Failed to save profile settings.');
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (e: any) {
+      setSaveError('Error updating profile: ' + (e.message || 'Unknown error'));
     } finally {
       setSaving(false);
     }
@@ -93,13 +170,11 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#080808] text-white flex items-center justify-center font-sans">
-        <div className="text-gray-400 font-semibold animate-pulse">Loading Profile Settings...</div>
+      <div className={`min-h-screen flex items-center justify-center font-sans ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#080808] text-white'}`}>
+        <div className="font-semibold animate-pulse opacity-70">Loading Profile Settings...</div>
       </div>
     );
   }
-
-  const isLight = themeMode === 'light';
 
   return (
     <div className={`min-h-screen font-sans flex flex-col transition-colors duration-300 ${
@@ -109,46 +184,60 @@ export default function ProfilePage() {
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-8 space-y-8">
         {/* Profile Avatar & Header Card */}
-        <div className={`p-8 rounded-3xl border flex flex-col sm:flex-row items-center gap-6 shadow-xl ${
+        <div className={`p-8 rounded-3xl border flex flex-col sm:flex-row items-center gap-6 shadow-xl transition-all ${
           isLight ? 'bg-white border-slate-200' : 'bg-[#141414] border-white/10'
         }`}>
           <div className="relative group">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-black text-3xl text-white overflow-hidden shadow-lg">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                fullName ? fullName.slice(0, 2).toUpperCase() : 'UP'
-              )}
-            </div>
+            <input
+              type="file"
+              id="avatar-upload"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+            <label htmlFor="avatar-upload" className="cursor-pointer block relative">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-black text-3xl text-white overflow-hidden shadow-lg">
+                {avatarUploading ? (
+                  <div className="animate-spin w-8 h-8 border-3 border-white border-t-transparent rounded-full" />
+                ) : avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  fullName ? fullName.slice(0, 2).toUpperCase() : 'UP'
+                )}
+              </div>
+              <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
+            </label>
           </div>
 
           <div className="text-center sm:text-left flex-1">
             <h1 className="text-2xl font-extrabold mb-1">{fullName || 'Uplan User'}</h1>
             <p className={`text-sm ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{email}</p>
-            <span className="inline-block mt-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-bold uppercase tracking-wider">
+            <span className="inline-block mt-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-400 text-xs font-bold uppercase tracking-wider">
               Standard Account
             </span>
           </div>
         </div>
 
-        {/* 1. APPEARANCE & MODE SETTINGS */}
-        <div className={`p-6 rounded-2xl border space-y-4 ${
-          isLight ? 'bg-white border-slate-200' : 'bg-[#141414] border-white/10'
+        {/* 1. APPEARANCE & THEME MODE SETTINGS */}
+        <div className={`p-6 rounded-2xl border space-y-4 transition-all ${
+          isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
         }`}>
           <h2 className="text-lg font-bold flex items-center gap-2">
-            {isLight ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-purple-400" />} Appearance & Theme Mode
+            {isLight ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-purple-400" />} Appearance & System Theme
           </h2>
           <p className={`text-sm ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>
-            Switch between dark mode and crisp white mode across your website dashboard.
+            Click White Mode or Dark Mode below to instantly change the theme across the entire Uplan website.
           </p>
 
           <div className="grid grid-cols-2 gap-4 pt-2">
             <button
-              onClick={() => setThemeMode('dark')}
+              onClick={() => setTheme('dark')}
               className={`p-4 rounded-xl border text-left transition-all flex items-center gap-3 ${
-                themeMode === 'dark'
-                  ? 'bg-purple-600/20 border-purple-500 text-white'
-                  : isLight ? 'bg-slate-100 border-slate-200 text-slate-700' : 'bg-[#1c1c1c] border-white/10 text-gray-400'
+                theme === 'dark'
+                  ? 'bg-purple-600/20 border-purple-500 text-white font-bold'
+                  : isLight ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200' : 'bg-[#1c1c1c] border-white/10 text-gray-400'
               }`}
             >
               <Moon className="w-6 h-6 text-purple-400" />
@@ -159,14 +248,14 @@ export default function ProfilePage() {
             </button>
 
             <button
-              onClick={() => setThemeMode('light')}
+              onClick={() => setTheme('light')}
               className={`p-4 rounded-xl border text-left transition-all flex items-center gap-3 ${
-                themeMode === 'light'
-                  ? 'bg-purple-600/20 border-purple-500 text-purple-700 font-bold'
-                  : 'bg-[#1c1c1c] border-white/10 text-gray-400'
+                theme === 'light'
+                  ? 'bg-purple-600/20 border-purple-500 text-purple-800 font-bold'
+                  : 'bg-[#1c1c1c] border-white/10 text-gray-400 hover:bg-[#242424]'
               }`}
             >
-              <Sun className="w-6 h-6 text-amber-400" />
+              <Sun className="w-6 h-6 text-amber-500" />
               <div>
                 <span className="font-bold text-sm block">White Mode</span>
                 <span className="text-xs opacity-75">Clean light theme</span>
@@ -175,17 +264,23 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 2. ACCOUNT SETTINGS */}
-        <div className={`p-6 rounded-2xl border space-y-4 ${
-          isLight ? 'bg-white border-slate-200' : 'bg-[#141414] border-white/10'
+        {/* 2. ACCOUNT SETTINGS & NAME EDITING */}
+        <div className={`p-6 rounded-2xl border space-y-4 transition-all ${
+          isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
         }`}>
           <h2 className="text-lg font-bold flex items-center gap-2">
-            <User className="w-5 h-5 text-purple-400" /> Account Settings
+            <User className="w-5 h-5 text-purple-500" /> Edit Profile & Account Name
           </h2>
 
           {saveSuccess && (
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center gap-2">
-              <Check className="w-5 h-5" /> Account settings updated successfully!
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-sm font-semibold flex items-center gap-2">
+              <Check className="w-5 h-5 text-emerald-500" /> Profile name updated successfully!
+            </div>
+          )}
+
+          {saveError && (
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-semibold">
+              {saveError}
             </div>
           )}
 
@@ -194,8 +289,10 @@ export default function ProfilePage() {
               <label className="block text-xs font-bold uppercase mb-1.5 opacity-70">Full Name</label>
               <input
                 type="text"
+                required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your full name"
                 className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500 ${
                   isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-[#1c1c1c] border-white/10 text-white'
                 }`}
@@ -203,15 +300,22 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase mb-1.5 opacity-70">Avatar Image URL</label>
-              <input
-                type="url"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="https://example.com/avatar.jpg"
-                className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-500 ${
-                  isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-[#1c1c1c] border-white/10 text-white'
+              <label className="block text-xs font-bold uppercase mb-1.5 opacity-70">Profile Picture</label>
+              <label
+                htmlFor="avatar-upload-form"
+                className={`flex items-center gap-3 w-full border rounded-xl px-4 py-2.5 text-sm cursor-pointer transition-all ${
+                  isLight ? 'bg-slate-50 border-slate-300 text-slate-700 hover:bg-slate-100' : 'bg-[#1c1c1c] border-white/10 text-gray-300 hover:bg-[#242424]'
                 }`}
+              >
+                <Upload className="w-4 h-4 text-purple-500" />
+                {avatarUrl ? 'Change profile picture...' : 'Choose a profile picture from your device...'}
+              </label>
+              <input
+                type="file"
+                id="avatar-upload-form"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
               />
             </div>
 
@@ -220,24 +324,24 @@ export default function ProfilePage() {
               disabled={saving}
               className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm text-white shadow-md hover:opacity-95 transition-all"
             >
-              {saving ? 'Saving...' : 'Save Profile Changes'}
+              {saving ? 'Saving Name...' : 'Save Profile Name & Settings'}
             </button>
           </form>
         </div>
 
         {/* 3. ACHIEVEMENTS */}
-        <div className={`p-6 rounded-2xl border space-y-4 ${
-          isLight ? 'bg-white border-slate-200' : 'bg-[#141414] border-white/10'
+        <div className={`p-6 rounded-2xl border space-y-4 transition-all ${
+          isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
         }`}>
           <h2 className="text-lg font-bold flex items-center gap-2">
-            <Award className="w-5 h-5 text-amber-400" /> Achievements & Unlocked Badges
+            <Award className="w-5 h-5 text-amber-500" /> Achievements & Badges
           </h2>
 
           <div className="grid md:grid-cols-3 gap-4">
             <div className={`p-4 rounded-xl border flex items-center gap-3 ${
               isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#1c1c1c] border-white/5'
             }`}>
-              <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+              <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center text-xl">
                 🔥
               </div>
               <div>
@@ -249,7 +353,7 @@ export default function ProfilePage() {
             <div className={`p-4 rounded-xl border flex items-center gap-3 ${
               isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#1c1c1c] border-white/5'
             }`}>
-              <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
+              <div className="w-10 h-10 rounded-full bg-purple-500/20 text-purple-500 flex items-center justify-center text-xl">
                 🎯
               </div>
               <div>
@@ -261,7 +365,7 @@ export default function ProfilePage() {
             <div className={`p-4 rounded-xl border flex items-center gap-3 ${
               isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#1c1c1c] border-white/5'
             }`}>
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center text-xl">
                 ⏱️
               </div>
               <div>
@@ -273,15 +377,17 @@ export default function ProfilePage() {
         </div>
 
         {/* 4. NOTIFICATIONS */}
-        <div className={`p-6 rounded-2xl border space-y-4 ${
-          isLight ? 'bg-white border-slate-200' : 'bg-[#141414] border-white/10'
+        <div className={`p-6 rounded-2xl border space-y-4 transition-all ${
+          isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
         }`}>
           <h2 className="text-lg font-bold flex items-center gap-2">
-            <Bell className="w-5 h-5 text-purple-400" /> Notifications & Alarms
+            <Bell className="w-5 h-5 text-purple-500" /> Notifications & Alarms
           </h2>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+            <div className={`flex items-center justify-between p-3 rounded-xl border ${
+              isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'
+            }`}>
               <div>
                 <span className="font-semibold text-sm block">Task Reminders & 5-Min Alarm</span>
                 <span className="text-xs opacity-60">Receive background alarms when task remains 5 minutes</span>
@@ -294,7 +400,9 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+            <div className={`flex items-center justify-between p-3 rounded-xl border ${
+              isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'
+            }`}>
               <div>
                 <span className="font-semibold text-sm block">Streak Daily Reminder</span>
                 <span className="text-xs opacity-60">Daily reminder at 8 PM to keep your streak active</span>
@@ -309,12 +417,12 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 5. PRIVACY & DATA */}
-        <div className={`p-6 rounded-2xl border space-y-4 ${
-          isLight ? 'bg-white border-slate-200' : 'bg-[#141414] border-white/10'
+        {/* 5. PRIVACY & SIGN OUT */}
+        <div className={`p-6 rounded-2xl border space-y-4 transition-all ${
+          isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
         }`}>
           <h2 className="text-lg font-bold flex items-center gap-2">
-            <Shield className="w-5 h-5 text-emerald-400" /> Privacy & Data
+            <Shield className="w-5 h-5 text-emerald-500" /> Privacy & Data
           </h2>
 
           <p className={`text-sm ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>
@@ -323,7 +431,7 @@ export default function ProfilePage() {
 
           <button
             onClick={handleSignOut}
-            className="w-full py-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 font-bold text-sm hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
           >
             <LogOut className="w-4 h-4" /> Sign Out of Uplan Web
           </button>
