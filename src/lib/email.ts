@@ -105,21 +105,24 @@ export async function sendVerificationEmail(to: string, name: string, verificati
 }
 
 export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
+  const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const uniqueTag = Math.floor(1000 + Math.random() * 9000);
+
   const html = getBaseTemplate(`
     <h1>Reset Your Password</h1>
-    <p>Hey ${name}, we received a request to reset your password. Click the button below to set a new one.</p>
-    <div style="text-align: center;">
-      <a href="${resetUrl}" class="cta-button">Reset Password</a>
+    <p>Hey ${name}, we received a request to reset your password. Click the button below to choose a new password.</p>
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${resetUrl}" class="cta-button" style="font-size: 16px; padding: 16px 40px; background: linear-gradient(135deg, #F05A9D, #A66CFF, #6366F1); color: #ffffff !important; text-decoration: none; border-radius: 14px; font-weight: 800; display: inline-block;">Reset Password Now →</a>
     </div>
-    <p style="font-size: 13px; color: rgba(255,255,255,0.4);">Or copy and paste this URL into your browser:</p>
-    <p style="font-size: 12px; word-break: break-all; color: #A66CFF;">${resetUrl}</p>
-    <p style="font-size: 13px; color: rgba(255,255,255,0.4);">This link expires in 1 hour. If you didn't request a password reset, ignore this email — your password won't change.</p>
+    <p style="font-size: 13px; color: rgba(255,255,255,0.4);">Or copy and paste this direct URL into your browser:</p>
+    <p style="font-size: 12px; word-break: break-all; color: #A66CFF; background: #141414; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">${resetUrl}</p>
+    <p style="font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 20px;">Requested at ${timeStr}. This link expires in 1 hour. If you didn't request a password reset, ignore this email.</p>
   `, 'Reset Password — Uplan');
 
   return transporter.sendMail({
     from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
     to,
-    subject: 'Reset Your Uplan Password 🔑',
+    subject: `Reset Your Uplan Password [Ref: #${uniqueTag} - ${timeStr}] 🔑`,
     html,
   });
 }

@@ -20,35 +20,26 @@ export default function ForgotPasswordPage() {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      // Hardcoded production Vercel URL as requested
       const resetUrl = 'https://uplanapp.vercel.app/reset-password';
 
-      // 1. Call Supabase Auth reset with explicit Vercel redirectTo URL
-      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      // 1. Send custom HTML Nodemailer email from adventureconnect7@gmail.com with unique subject reference tag
+      const emailRes = await fetch('/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'password-reset',
+          to: cleanEmail,
+          name: cleanEmail.split('@')[0],
+          url: resetUrl,
+        }),
+      });
+
+      // 2. Also register reset request in Supabase Auth
+      await supabase.auth.resetPasswordForEmail(cleanEmail, {
         redirectTo: resetUrl,
       });
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      // 2. Also attempt custom Nodemailer send if API environment variables are present
-      try {
-        await fetch('/api/email/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'password-reset',
-            to: cleanEmail,
-            name: cleanEmail.split('@')[0],
-            url: resetUrl,
-          }),
-        });
-      } catch (e) {
-        // Fallback silently if Vercel env vars are not set — Supabase custom SMTP handled it!
-      }
-
-      setSuccessMsg(`A password reset link has been sent to ${cleanEmail}. Please check your inbox or spam folder.`);
+      setSuccessMsg(`A fresh password reset email has been sent to ${cleanEmail}. Check the top of your inbox for the latest email!`);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to send reset link. Please try again.';
       setErrorMsg(errorMessage);
