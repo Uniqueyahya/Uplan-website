@@ -20,14 +20,10 @@ export default function ForgotPasswordPage() {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      // Dynamically detect current origin (http://localhost:3000 on local, https://uplanapp.vercel.app on Vercel)
-      const currentOrigin = typeof window !== 'undefined' && window.location.origin 
-        ? window.location.origin 
-        : 'https://uplanapp.vercel.app';
-        
-      const resetUrl = `${currentOrigin}/reset-password`;
+      // Hardcoded production Vercel URL as requested
+      const resetUrl = 'https://uplanapp.vercel.app/reset-password';
 
-      // 1. Call Supabase Auth reset with dynamic redirectTo URL
+      // 1. Call Supabase Auth reset with explicit Vercel redirectTo URL
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
         redirectTo: resetUrl,
       });
