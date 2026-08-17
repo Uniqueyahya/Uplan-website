@@ -16,55 +16,55 @@ export default function Home() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Link 
               href="/login" 
-              className="px-4 py-2 text-sm font-semibold text-gray-300 hover:text-white transition-colors"
+              className="px-3 py-1.5 text-xs font-semibold text-gray-300 hover:text-white transition-colors"
             >
               Sign In
             </Link>
             <Link 
               href="/register" 
-              className="px-5 py-2.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/25 hover:opacity-95 transition-all flex items-center gap-2"
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white shadow-md shadow-purple-500/20 hover:opacity-95 transition-all flex items-center gap-1.5"
             >
-              Get Started Free <ArrowRight className="w-4 h-4" />
+              Get Started Free <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-20 flex flex-col items-center justify-center text-center relative">
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-16 flex flex-col items-center justify-center text-center relative">
         <div className="absolute inset-0 -z-10 flex items-center justify-center">
           <div className="w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[140px]" />
           <div className="w-[400px] h-[400px] bg-pink-600/15 rounded-full blur-[120px]" />
         </div>
 
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-purple-400 text-xs font-semibold uppercase tracking-wider mb-8">
-          <Sparkles className="w-4 h-4" /> Plan Your Day. Shop Smart. Track Goals.
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-purple-400 text-xs font-semibold uppercase tracking-wider mb-6">
+          <Sparkles className="w-3.5 h-3.5" /> Plan Your Day. Shop Smart. Track Goals.
         </div>
 
-        <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight max-w-4xl leading-[1.1] mb-6">
+        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight max-w-4xl leading-[1.1] mb-5">
           Wake Up & Plan Your Day <br />
           <span className="bg-gradient-to-r from-pink-500 via-purple-400 to-indigo-500 bg-clip-text text-transparent">
             No Timers Required.
           </span>
         </h1>
 
-        <p className="text-gray-400 text-lg sm:text-xl max-w-2xl mb-10 leading-relaxed">
+        <p className="text-gray-400 text-base sm:text-lg max-w-2xl mb-8 leading-relaxed">
           Uplan combines daily goal planning, digital Market Shopping Lists (Sugar, Soap, Groceries), and executive administrative management into one unified platform.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full justify-center">
           <Link 
             href="/register" 
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm shadow-md shadow-purple-500/20 hover:opacity-95 transition-all text-center"
+            className="w-full sm:w-auto px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-xs shadow-md shadow-purple-500/20 hover:opacity-95 transition-all text-center"
           >
             Create Your Account
           </Link>
           <Link 
             href="/login" 
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 font-bold text-sm transition-all text-center"
+            className="w-full sm:w-auto px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 font-bold text-xs transition-all text-center"
           >
             Sign In to Dashboard
           </Link>
