@@ -105,8 +105,15 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 text-center text-gray-500 text-sm">
-        © {new Date().getFullYear()} Uplan Web Portal. Syncing with mobile & database in real time.
+      <footer className="border-t border-white/10 py-8 text-center text-gray-500 text-xs space-y-2">
+        <div className="flex items-center justify-center gap-4 font-semibold">
+          <Link href="/" className="hover:text-white transition-colors">Home</Link>
+          <span>•</span>
+          <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
+          <span>•</span>
+          <Link href="/privacy-policy" className="text-gray-400 hover:text-purple-400 transition-colors">Privacy Policy</Link>
+        </div>
+        <p>© {new Date().getFullYear()} Uplan Web Portal. Syncing with mobile & database in real time.</p>
       </footer>
     </div>
   );
