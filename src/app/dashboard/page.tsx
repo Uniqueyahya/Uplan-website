@@ -40,6 +40,19 @@ export default function HomePage() {
         return;
       }
 
+      // Check if user is suspended
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('status')
+        .eq('id', u.id)
+        .single();
+
+      if (profile && profile.status === 'suspended') {
+        await supabase.auth.signOut();
+        router.replace('/login');
+        return;
+      }
+
       // Fetch Today's Tasks
       const todayStr = new Date().toISOString().split('T')[0];
       const { data: rawTasks } = await supabase

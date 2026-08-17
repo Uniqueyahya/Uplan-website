@@ -94,6 +94,30 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to permanently delete user "${userName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setUsers(prev => prev.filter(u => u.id !== userId));
+
+    try {
+      // 1. Delete user tasks and completions
+      await supabase.from('tasks').delete().eq('user_id', userId);
+      await supabase.from('market_items').delete().eq('user_id', userId);
+      
+      // 2. Delete user profile record
+      const { error } = await supabase.from('profiles').delete().eq('id', userId);
+      if (error) throw error;
+
+      alert(`User "${userName}" deleted successfully.`);
+      fetchAdminData();
+    } catch (e: any) {
+      alert(`Failed to delete user: ${e.message || 'Error occurred'}`);
+      fetchAdminData();
+    }
+  };
+
   const handleSendBroadcast = (e: React.FormEvent) => {
     e.preventDefault();
     if (!broadcastTitle.trim() || !broadcastBody.trim()) {
@@ -386,16 +410,27 @@ export default function AdminPage() {
                       <p className="text-xs text-gray-400">{u.email}</p>
                     </div>
 
-                    <button
-                      onClick={() => handleToggleUserStatus(u.id, u.status)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                        u.status === 'active'
-                          ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
-                          : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-                      }`}
-                    >
-                      {u.status === 'active' ? 'Suspend Account' : 'Activate Account'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleToggleUserStatus(u.id, u.status)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                          u.status === 'active'
+                            ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
+                            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                        }`}
+                      >
+                        {u.status === 'active' ? 'Suspend' : 'Activate'}
+                      </button>
+
+                      {u.email !== 'adminuplan@gmail.com' && (
+                        <button
+                          onClick={() => handleDeleteUser(u.id, u.name)}
+                          className="px-4 py-2 rounded-xl text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all"
+                        >
+                          Delete Account
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))
               ) : (

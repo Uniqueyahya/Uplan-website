@@ -39,6 +39,20 @@ export default function LoginPage() {
       if (data.user) {
         const isAdmin = cleanEmail === 'adminuplan@gmail.com';
         
+        // Fetch existing profile to check status
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('status')
+          .eq('id', data.user.id)
+          .single();
+
+        if (existingProfile && existingProfile.status === 'suspended') {
+          await supabase.auth.signOut();
+          setErrorMsg('Your account has been suspended by the administrator. Please contact support@uplan.app.');
+          setLoading(false);
+          return;
+        }
+
         // Upsert user profile to database
         await supabase.from('profiles').upsert({
           id: data.user.id,
