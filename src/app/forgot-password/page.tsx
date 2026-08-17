@@ -20,9 +20,14 @@ export default function ForgotPasswordPage() {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      const resetUrl = `${window.location.origin}/reset-password`;
+      // Dynamically detect current origin (http://localhost:3000 on local, https://uplanapp.vercel.app on Vercel)
+      const currentOrigin = typeof window !== 'undefined' && window.location.origin 
+        ? window.location.origin 
+        : 'https://uplanapp.vercel.app';
+        
+      const resetUrl = `${currentOrigin}/reset-password`;
 
-      // 1. Call Supabase Auth reset (uses the Custom SMTP configured in Supabase Dashboard: adventureconnect7@gmail.com)
+      // 1. Call Supabase Auth reset with dynamic redirectTo URL
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
         redirectTo: resetUrl,
       });
