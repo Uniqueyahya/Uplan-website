@@ -394,46 +394,46 @@ export default function AdminPage() {
               />
             </div>
 
-            <div className="space-y-3">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((u) => (
-                  <div key={u.id} className="p-4 rounded-2xl bg-[#141414] border border-white/10 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-base">{u.name}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          u.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
-                        }`}>
-                          {u.status}
-                        </span>
+              <div className="space-y-3">
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map((u) => (
+                    <div key={u.id} className="p-4 rounded-2xl bg-[#141414] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-base">{u.name}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            u.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                          }`}>
+                            {u.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 break-all">{u.email}</p>
                       </div>
-                      <p className="text-xs text-gray-400">{u.email}</p>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleToggleUserStatus(u.id, u.status)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                          u.status === 'active'
-                            ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
-                            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-                        }`}
-                      >
-                        {u.status === 'active' ? 'Suspend' : 'Activate'}
-                      </button>
-
-                      {u.email !== 'adminuplan@gmail.com' && (
+                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                         <button
-                          onClick={() => handleDeleteUser(u.id, u.name)}
-                          className="px-4 py-2 rounded-xl text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all"
+                          onClick={() => handleToggleUserStatus(u.id, u.status)}
+                          className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold border transition-all text-center ${
+                            u.status === 'active'
+                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
+                              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                          }`}
                         >
-                          Delete Account
+                          {u.status === 'active' ? 'Suspend' : 'Activate'}
                         </button>
-                      )}
+
+                        {u.email !== 'adminuplan@gmail.com' && (
+                          <button
+                            onClick={() => handleDeleteUser(u.id, u.name)}
+                            className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all text-center"
+                          >
+                            Delete Account
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
-              ) : (
+                  ))
+                ) : (
                 <div className="p-12 text-center rounded-2xl bg-[#141414] border border-white/10 text-gray-500">
                   No users found in directory.
                 </div>

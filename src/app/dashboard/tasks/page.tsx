@@ -350,11 +350,11 @@ export default function TasksPage() {
     }`}>
       <WebNavbar />
 
-      <div className={`border-b ${isLight ? 'bg-white border-slate-200' : 'bg-[#121212] border-white/10'}`}>
-        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center gap-2">
+      <div className={`border-b sticky top-16 z-30 ${isLight ? 'bg-white border-slate-200' : 'bg-[#121212] border-white/10'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center gap-2 overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveSubTab('today')}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
               activeSubTab === 'today' ? 'bg-purple-600 text-white' : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -362,7 +362,7 @@ export default function TasksPage() {
           </button>
           <button
             onClick={() => setActiveSubTab('weekly')}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
               activeSubTab === 'weekly' ? 'bg-purple-600 text-white' : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -370,7 +370,7 @@ export default function TasksPage() {
           </button>
           <button
             onClick={() => setActiveSubTab('history')}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3.5 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
               activeSubTab === 'history' ? 'bg-purple-600 text-white' : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -380,7 +380,7 @@ export default function TasksPage() {
       </div>
 
       {activeSubTab === 'today' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-6">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-12 space-y-6">
           <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
             isLight 
               ? 'bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 border-slate-200 shadow-sm' 
@@ -526,7 +526,7 @@ export default function TasksPage() {
       )}
 
       {activeSubTab === 'weekly' && (
-        <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 space-y-6">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-12 space-y-6">
           <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
             isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-indigo-500/15 border-white/10'
           }`}>
@@ -605,7 +605,7 @@ export default function TasksPage() {
       )}
 
       {activeSubTab === 'history' && (
-        <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 space-y-6">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-12 space-y-6">
           <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
             isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
           }`}>

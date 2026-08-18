@@ -182,10 +182,10 @@ export default function ProfilePage() {
     }`}>
       <WebNavbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-8 space-y-8">
-        {/* Profile Avatar & Header Card */}
-        <div className={`p-8 rounded-3xl border flex flex-col sm:flex-row items-center gap-6 shadow-xl transition-all ${
-          isLight ? 'bg-white border-slate-200' : 'bg-[#141414] border-white/10'
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-12 space-y-6 sm:space-y-8">
+        {/* Profile Header */}
+        <div className={`p-6 sm:p-8 rounded-3xl border flex flex-col sm:flex-row items-center gap-6 transition-all ${
+          isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
         }`}>
           <div className="relative group">
             <input
@@ -195,8 +195,8 @@ export default function ProfilePage() {
               onChange={handleAvatarUpload}
               className="hidden"
             />
-            <label htmlFor="avatar-upload" className="cursor-pointer block relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-black text-3xl text-white overflow-hidden shadow-lg">
+            <label htmlFor="avatar-upload" className="cursor-pointer block">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-extrabold text-2xl text-white shadow-lg overflow-hidden border-2 border-purple-500/50">
                 {avatarUploading ? (
                   <div className="animate-spin w-8 h-8 border-3 border-white border-t-transparent rounded-full" />
                 ) : avatarUrl ? (
@@ -231,7 +231,7 @@ export default function ProfilePage() {
             Click White Mode or Dark Mode below to instantly change the theme across the entire Uplan website.
           </p>
 
-          <div className="grid grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2">
             <button
               onClick={() => setTheme('dark')}
               className={`p-4 rounded-xl border text-left transition-all flex items-center gap-3 ${

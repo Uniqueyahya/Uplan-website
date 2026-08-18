@@ -75,19 +75,19 @@ export default function DeleteAccountPage() {
     <div className="min-h-screen bg-[#080808] text-white flex flex-col font-sans selection:bg-red-500 selection:text-white">
       {/* Header Navigation */}
       <header className="border-b border-white/10 backdrop-blur-md bg-black/50 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-extrabold text-base shadow-md shadow-purple-500/20 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-extrabold text-sm sm:text-base shadow-md shadow-purple-500/20 text-white">
               U
             </div>
-            <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
+            <span className="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
               Uplan
             </span>
           </Link>
 
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white transition-all"
+            className="inline-flex items-center gap-1.5 sm:gap-2 text-xs font-semibold px-3 sm:px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white transition-all"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
           </Link>
@@ -95,9 +95,9 @@ export default function DeleteAccountPage() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-12 space-y-10">
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 sm:space-y-10">
         {/* Banner Card */}
-        <div className="p-8 sm:p-10 rounded-3xl bg-[#141414] border border-red-500/20 relative overflow-hidden shadow-2xl">
+        <div className="p-6 sm:p-10 rounded-3xl bg-[#141414] border border-red-500/20 relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-600/10 rounded-full blur-3xl pointer-events-none" />
 

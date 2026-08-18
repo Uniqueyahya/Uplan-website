@@ -112,17 +112,17 @@ export default function MarketPage() {
     }`}>
       <WebNavbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-8 space-y-8">
-        <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-12 space-y-6 sm:space-y-8">
+        <div className={`p-5 sm:p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
           isLight 
             ? 'bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 border-slate-200 shadow-sm' 
             : 'bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-indigo-500/15 border-white/10'
         }`}>
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
-              <ShoppingCart className="w-6 h-6 text-pink-500" /> Digital Market Shopping List 🛒
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 mb-1">
+              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500" /> Digital Market Shopping List 🛒
             </h1>
-            <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
+            <p className={`text-xs sm:text-sm ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
               Plan what to buy (Sugar, Soap, Milk, Groceries) instead of paper notes.
             </p>
           </div>

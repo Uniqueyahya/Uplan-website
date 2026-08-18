@@ -122,29 +122,29 @@ export default function HomePage() {
     }`}>
       <WebNavbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-12 space-y-6 sm:space-y-8">
         {/* Welcome Banner */}
-        <div className={`p-8 rounded-3xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all ${
+        <div className={`p-5 sm:p-8 rounded-3xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 transition-all ${
           isLight 
             ? 'bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 border-slate-200 shadow-sm' 
             : 'bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-indigo-500/15 border-white/10'
         }`}>
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-300 text-xs font-extrabold uppercase mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-300 text-xs font-extrabold uppercase mb-2 sm:mb-3">
               <Sparkles className="w-3.5 h-3.5" /> Welcome Back, {user?.user_metadata?.full_name || 'Planner'}!
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
               Main Home Overview
             </h1>
-            <p className={`text-sm max-w-xl ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
+            <p className={`text-xs sm:text-sm max-w-xl ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
               Track your daily progress, start focus timers, manage market shopping lists, and view weekly goals.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="w-full sm:w-auto flex items-center gap-3">
             <Link
               href="/dashboard/tasks"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm text-white shadow-md hover:opacity-95 transition-all flex items-center gap-2"
+              className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-xs sm:text-sm text-white shadow-md hover:opacity-95 transition-all flex items-center justify-center gap-2 text-center"
             >
               <CheckSquare className="w-4 h-4" /> Open Tasks & Planner
             </Link>
@@ -152,37 +152,37 @@ export default function HomePage() {
         </div>
 
         {/* Real Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className={`p-5 rounded-2xl border space-y-2 transition-all ${
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className={`p-4 sm:p-5 rounded-2xl border space-y-1.5 sm:space-y-2 transition-all ${
             isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
           }`}>
-            <div className={`text-xs font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>Completion Rate</div>
-            <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">{progressPercentage}%</div>
-            <div className={`text-xs ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>Today's Goal Rate</div>
+            <div className={`text-[10px] sm:text-xs font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>Completion Rate</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-purple-600 dark:text-purple-400">{progressPercentage}%</div>
+            <div className={`text-[10px] sm:text-xs ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>Today's Goal Rate</div>
           </div>
 
-          <div className={`p-5 rounded-2xl border space-y-2 transition-all ${
+          <div className={`p-4 sm:p-5 rounded-2xl border space-y-1.5 sm:space-y-2 transition-all ${
             isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
           }`}>
-            <div className={`text-xs font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>Completed Tasks</div>
-            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{totalCompleted}</div>
-            <div className={`text-xs ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>Lifetime Accomplished</div>
+            <div className={`text-[10px] sm:text-xs font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>Completed Tasks</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{totalCompleted}</div>
+            <div className={`text-[10px] sm:text-xs ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>Lifetime Accomplished</div>
           </div>
 
-          <div className={`p-5 rounded-2xl border space-y-2 transition-all ${
+          <div className={`p-4 sm:p-5 rounded-2xl border space-y-1.5 sm:space-y-2 transition-all ${
             isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
           }`}>
-            <div className={`text-xs font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>Focus Time</div>
-            <div className="text-3xl font-extrabold text-pink-600 dark:text-pink-400">{focusHoursText}</div>
-            <div className={`text-xs ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>Logged Sessions</div>
+            <div className={`text-[10px] sm:text-xs font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>Focus Time</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-pink-600 dark:text-pink-400">{focusHoursText}</div>
+            <div className={`text-[10px] sm:text-xs ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>Logged Sessions</div>
           </div>
 
-          <div className={`p-5 rounded-2xl border space-y-2 transition-all ${
+          <div className={`p-4 sm:p-5 rounded-2xl border space-y-1.5 sm:space-y-2 transition-all ${
             isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'
           }`}>
-            <div className={`text-xs font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>Active Goals</div>
-            <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">{totalCount}</div>
-            <div className={`text-xs ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>Planned Today</div>
+            <div className={`text-[10px] sm:text-xs font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>Active Goals</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">{totalCount}</div>
+            <div className={`text-[10px] sm:text-xs ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>Planned Today</div>
           </div>
         </div>
 

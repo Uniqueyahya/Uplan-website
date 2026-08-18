@@ -49,15 +49,15 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white flex flex-col justify-center items-center px-6 py-12 relative font-sans">
-      <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-8 shadow-2xl">
-        <Link href="/login" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-6 transition-colors">
+    <div className="min-h-screen bg-[#080808] text-white flex flex-col justify-center items-center px-4 sm:px-6 py-6 sm:py-12 relative font-sans">
+      <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <Link href="/login" className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-400 hover:text-white mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Sign In
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Forgot Password?</h1>
-          <p className="text-gray-400 text-sm">Enter your registered email address and we'll send you instructions to reset your password.</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Forgot Password?</h1>
+          <p className="text-gray-400 text-xs sm:text-sm">Enter your registered email address and we'll send you instructions to reset your password.</p>
         </div>
 
         {errorMsg && (

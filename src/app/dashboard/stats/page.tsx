@@ -130,23 +130,23 @@ export default function StatsPage() {
     }`}>
       <WebNavbar />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-8 space-y-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-12 space-y-6 sm:space-y-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold flex items-center gap-2">
-              <BarChart2 className="w-8 h-8 text-purple-500" /> Analytics & Insights 📊
+            <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2">
+              <BarChart2 className="w-7 h-7 sm:w-8 sm:h-8 text-purple-500" /> Analytics & Insights 📊
             </h1>
-            <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Review completion trends, focus time, and productivity metrics</p>
+            <p className={`text-xs sm:text-sm ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Review completion trends, focus time, and productivity metrics</p>
           </div>
 
-          <div className={`flex items-center p-1.5 rounded-2xl border ${
+          <div className={`flex items-center p-1 rounded-2xl border ${
             isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#1c1c1c] border-white/10'
           }`}>
             {(['week', 'month', 'all'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 sm:px-4 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all ${
                   filter === f
                     ? 'bg-purple-600 text-white shadow-md'
                     : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-gray-400 hover:text-white'
@@ -158,7 +158,7 @@ export default function StatsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className={`p-6 rounded-2xl border space-y-1 ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#141414] border-white/10'}`}>
             <span className="text-xs text-gray-500 font-bold uppercase">Completion Rate</span>
             <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">{completionRate}%</div>

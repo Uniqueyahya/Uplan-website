@@ -95,20 +95,20 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#080808] text-white flex flex-col justify-center items-center px-6 py-12 font-sans">
-        <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-8 text-center shadow-2xl">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10" />
+      <div className="min-h-screen bg-[#080808] text-white flex flex-col justify-center items-center px-4 sm:px-6 py-6 sm:py-12 font-sans">
+        <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-6 sm:p-8 text-center shadow-2xl">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-extrabold mb-3">Account Created Successfully!</h2>
-          <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-            Your account for <span className="text-white font-bold">{email}</span> has been registered. Welcome email has been sent!
+          <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Account Verified!</h2>
+          <p className="text-gray-400 text-xs sm:text-sm mb-6 leading-relaxed">
+            Welcome to Uplan! Your account has been registered successfully. You can now sign in to your new account.
           </p>
           <Link
             href="/login"
-            className="block w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-white shadow-lg shadow-purple-500/25 hover:opacity-95 transition-all"
+            className="block w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm text-white shadow-lg hover:opacity-95 transition-all text-center"
           >
-            Proceed to Sign In
+            Sign In Now →
           </Link>
         </div>
       </div>
@@ -116,15 +116,15 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white flex flex-col justify-center items-center px-6 py-12 relative font-sans">
-      <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-8 shadow-2xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white mb-6 transition-colors">
+    <div className="min-h-screen bg-[#080808] text-white flex flex-col justify-center items-center px-4 sm:px-6 py-6 sm:py-12 relative font-sans">
+      <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <Link href="/" className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-400 hover:text-white mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">Create Account</h1>
-          <p className="text-gray-400 text-sm">Start planning your goals & market shopping on Uplan</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Create Account</h1>
+          <p className="text-gray-400 text-xs sm:text-sm">Join Uplan today to start tracking your daily goals</p>
         </div>
 
         {errorMsg && (
