@@ -27,8 +27,8 @@ export default function LoginPage() {
       });
 
       if (error) {
-        if (error.message.toLowerCase().includes('confirm')) {
-          setErrorMsg('Email not confirmed yet. For testing, please run the Auto-Confirm SQL in Supabase SQL Editor.');
+        if (error.message.toLowerCase().includes('confirm') || error.message.toLowerCase().includes('email not confirmed')) {
+          setErrorMsg('Email not verified yet. Please kindly check your Inbox or Spam folder and click the verification link to activate your account.');
         } else {
           setErrorMsg(error.message || 'Invalid email or password.');
         }

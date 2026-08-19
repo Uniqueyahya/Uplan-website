@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Lock, Mail, User, Phone, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Lock, Mail, User, Phone, AlertCircle, Eye, EyeOff, Send, RefreshCw } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,7 +16,10 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [success, setSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +51,7 @@ export default function RegisterPage() {
             full_name: cleanName,
             phone: cleanPhone,
           },
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined,
         },
       });
 
@@ -60,16 +64,20 @@ export default function RegisterPage() {
       if (data.user) {
         const isAdmin = cleanEmail === 'adminuplan@gmail.com';
         
-        // Upsert user profile to database
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          email: cleanEmail,
-          full_name: cleanName,
-          phone: cleanPhone,
-          role: isAdmin ? 'super_admin' : 'user',
-        });
+        // Upsert user profile in database
+        try {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            email: cleanEmail,
+            full_name: cleanName,
+            phone: cleanPhone,
+            role: isAdmin ? 'super_admin' : 'user',
+          });
+        } catch (e) {
+          // Profile trigger will handle if unauthenticated
+        }
 
-        // Send welcome email via Nodemailer API
+        // Send welcome / verification notice email via Nodemailer API
         try {
           await fetch('/api/email/send', {
             method: 'POST',
@@ -84,6 +92,7 @@ export default function RegisterPage() {
           // Ignore welcome email error if transporter unconfigured
         }
 
+        setRegisteredEmail(cleanEmail);
         setSuccess(true);
       }
     } catch (err: any) {
@@ -93,23 +102,90 @@ export default function RegisterPage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!registeredEmail) return;
+    setResending(true);
+    setResendMsg('');
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: registeredEmail,
+      });
+
+      if (error) {
+        setResendMsg('Could not resend email right now. Please wait a moment.');
+      } else {
+        setResendMsg('Verification email resent! Please check your inbox and spam folder.');
+      }
+    } catch (e) {
+      setResendMsg('Verification email resent! Please check your inbox and spam folder.');
+    } finally {
+      setResending(false);
+    }
+  };
+
   if (success) {
     return (
       <div className="min-h-screen bg-[#080808] text-white flex flex-col justify-center items-center px-4 sm:px-6 py-6 sm:py-12 font-sans">
-        <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-6 sm:p-8 text-center shadow-2xl">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8" />
+        <div className="w-full max-w-md bg-[#141414] border border-white/10 rounded-3xl p-6 sm:p-8 text-center shadow-2xl space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500/20 via-purple-500/20 to-indigo-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center mx-auto shadow-lg shadow-purple-500/10">
+            <Mail className="w-8 h-8 text-purple-400" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Account Verified!</h2>
-          <p className="text-gray-400 text-xs sm:text-sm mb-6 leading-relaxed">
-            Welcome to Uplan! Your account has been registered successfully. You can now sign in to your new account.
-          </p>
-          <Link
-            href="/login"
-            className="block w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm text-white shadow-lg hover:opacity-95 transition-all text-center"
-          >
-            Sign In Now →
-          </Link>
+
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-purple-400 block mb-1">
+              Verification Required
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Please Check Your Email ✉️
+            </h2>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-[#1c1c1c] border border-white/5 text-left text-xs sm:text-sm text-gray-300 space-y-2.5 leading-relaxed">
+            <p>
+              We have sent a verification email to:
+              <strong className="block text-white font-bold break-all mt-0.5 text-sm">{registeredEmail}</strong>
+            </p>
+            <div className="border-t border-white/10 pt-2.5 space-y-1.5 text-gray-400 text-xs">
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400 font-bold">1.</span>
+                <span>Open your email app (Gmail, Outlook, Yahoo, etc.).</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400 font-bold">2.</span>
+                <span>Check your <strong>Inbox</strong> or <strong>Spam / Junk folder</strong>.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400 font-bold">3.</span>
+                <span>Click the verification link to activate your account.</span>
+              </div>
+            </div>
+          </div>
+
+          {resendMsg && (
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs">
+              {resendMsg}
+            </div>
+          )}
+
+          <div className="space-y-3 pt-2">
+            <Link
+              href="/login"
+              className="block w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-sm text-white shadow-lg hover:opacity-95 transition-all text-center"
+            >
+              Proceed to Sign In →
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resending}
+              className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-300 hover:text-white transition-all flex items-center justify-center gap-2"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
+              {resending ? 'Resending...' : 'Resend Verification Email'}
+            </button>
+          </div>
         </div>
       </div>
     );
